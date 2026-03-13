@@ -17,11 +17,16 @@ async function cargarProductosIniciales() {
 let productos = [];
 let totalVendido = 0;
 let carrito = [];
+let vistaActual = localStorage.getItem("vista") || "user";
 
 
 const formProducto = document.getElementById("formProducto");
 const listaProductos = document.getElementById("listaProductos");
+const carritoGuardado = localStorage.getItem("carrito");
 
+if (carritoGuardado) {
+    carrito = JSON.parse(carritoGuardado);
+}
 
 // CARGA DESDE STORAGE
 
@@ -80,6 +85,22 @@ function calcularValorTotal() {
         "Valor total del inventario: $" + total.toLocaleString();
 }
 
+function cambiarVista(tipo) {
+
+    vistaActual = tipo;
+
+    localStorage.setItem("vista", tipo);
+
+    const botonesAdmin = document.querySelectorAll(".admin");
+
+    botonesAdmin.forEach(btn => {
+        btn.style.display = tipo === "admin" ? "inline-block" : "none";
+    });
+
+}
+
+
+
 // AGREGAR PRODUCTO
 
 
@@ -135,10 +156,10 @@ function mostrarProductos() {
                 Precio: $${producto.precio}
             </p>
             <div class="botones">
-                <button onclick="sumarStock(${i})">➕</button>
-                <button onclick="restarStock(${i})">➖</button>
+               <button class="admin" onclick="sumarStock(${i})">➕</button>
+                <button class="admin" onclick="restarStock(${i})">➖</button>
                 <button onclick="agregarAlCarrito(${i})">🛒</button>
-                <button onclick="eliminarProducto(${i})">🗑</button>
+                <button class="admin" onclick="eliminarProducto(${i})">🗑</button>
             </div>
         `;
         listaProductos.appendChild(div);
@@ -200,6 +221,7 @@ function agregarAlCarrito(i) {
     }
 
     mostrarCarrito();
+    guardarCarrito();
 }
 
 function mostrarCarrito() {
@@ -241,6 +263,7 @@ function aumentarCantidad(i) {
 
     item.cantidad++;
     mostrarCarrito();
+    guardarCarrito();
 }
 
 function disminuirCantidad(i) {
@@ -250,13 +273,18 @@ function disminuirCantidad(i) {
         carrito.splice(i, 1);
     }
     mostrarCarrito();
+    guardarCarrito();
 }
 
 function quitarDelCarrito(i) {
     carrito.splice(i, 1);
     mostrarCarrito();
+    guardarCarrito();
 }
 
+function guardarCarrito() {
+    localStorage.setItem("carrito", JSON.stringify(carrito));
+}
 
 // COBRAR
 
@@ -298,6 +326,7 @@ function cobrar() {
         guardarProductos();
 
         carrito = [];
+        guardarCarrito();
 
         mostrarCarrito();
         mostrarProductos();
@@ -313,3 +342,5 @@ function cobrar() {
 }
 
 mostrarProductos();
+mostrarCarrito();
+cambiarVista(vistaActual);
